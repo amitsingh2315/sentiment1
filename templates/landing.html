@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#667eea" />
+  <title>Text Sentiment Predictor</title>
+  
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #2d3748;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #718096;
+      font-size: 1rem;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      background: #f7fafc;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    input[type="file"]:hover {
+      border-color: #667eea;
+      background: #fff;
+    }
+
+    input[type="file"]:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      background: #f7fafc;
+      resize: vertical;
+      min-height: 120px;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea::placeholder {
+      color: #a0aec0;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      margin-top: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    #downloadBtn {
+      background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+      box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+    }
+
+    #downloadBtn:hover {
+      box-shadow: 0 6px 20px rgba(72, 187, 120, 0.5);
+    }
+
+    .result-section {
+      margin-top: 30px;
+    }
+
+    .result-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    #predictionResult {
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* Color-coded results */
+    #predictionResult:has-text("Positive"),
+    #predictionResult[data-sentiment="Positive"] {
+      background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+      color: #22543d;
+      border: 2px solid #48bb78;
+    }
+
+    #predictionResult:has-text("Negative"),
+    #predictionResult[data-sentiment="Negative"] {
+      background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+      color: #742a2a;
+      border: 2px solid #f56565;
+    }
+
+    /* Fallback for browsers that don't support :has() */
+    .sentiment-positive {
+      background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%) !important;
+      color: #22543d !important;
+      border: 2px solid #48bb78 !important;
+    }
+
+    .sentiment-negative {
+      background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%) !important;
+      color: #742a2a !important;
+      border: 2px solid #f56565 !important;
+    }
+
+    #graphContainer {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #graphContainer img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .card {
+        padding: 25px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .result-title {
+        font-size: 1.1rem;
+      }
+
+      #predictionResult {
+        font-size: 1rem;
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Text Sentiment Prediction</h1>
+      <p class="subtitle">Understand the emotions behind the words</p>
+
+      <form id="predictionForm">
+        <div class="form-group">
+          <label for="csvFileInput">Upload CSV File (Optional)</label>
+          <input type="file" id="csvFileInput" accept=".csv">
+        </div>
+
+        <div class="form-group">
+          <label for="textInput">Enter Text for Prediction</label>
+          <textarea id="textInput" placeholder="Type your text here..."></textarea>
+        </div>
+
+        <button type="button" onclick="predict()">Predict Sentiment</button>
+      </form>
+
+      <div class="result-section">
+        <div class="result-title">Prediction Result</div>
+        <div id="predictionResult"></div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-title">Distribution Graph</div>
+        <div id="graphContainer"></div>
+      </div>
+
+      <button id="downloadBtn" style="display:none" onclick="downloadPredictions()">Download Predictions</button>
+    </div>
+  </div>
+
+  <script>
+    function predict() {
+      // Check if CSV file is present
+      var csvFileInput = document.getElementById("csvFileInput");
+      var textInput = document.getElementById("textInput");
+      var predictionResult = document.getElementById("predictionResult");
+      var graphContainer = document.getElementById("graphContainer");
+
+      if (csvFileInput.files.length > 0) {
+        // Upload CSV file
+        var formData = new FormData();
+        formData.append("file", csvFileInput.files[0]);
+
+        fetch("http://localhost:5000/predict", {
+          method: "POST",
+          body: formData
+        })
+          .then(response => {
+            if (response.headers.get('X-Graph-Exists') === 'true') {
+              console.log("Graph")
+              var graphData = response.headers.get('X-Graph-Data');
+              displayGraph(graphData);
+            }
+
+            return response.blob();
+          })
+          .then(blob => {
+            console.log("Blob:", blob);
+
+            document.getElementById("downloadBtn").style.display = "block";
+            document.getElementById("downloadBtn").onclick = function () {
+              console.log("Downloading...");
+              var url = URL.createObjectURL(blob);
+              console.log("URL:", url);
+
+              var a = document.createElement("a");
+              a.href = url;
+              a.download = "Predictions.csv";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            };
+          })
+          .catch(error => {
+            console.error("Error:", error);
+          });
+
+      } else if (textInput.value.trim() !== "") {
+        // Predict on single sentence
+        fetch("http://localhost:5000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ "text": textInput.value.trim() })
+        })
+          .then(async response => {
+            // Fix: Check Content-Type header to ensure it's JSON before parsing
+            const contentType = response.headers.get("content-type");
+            
+            // Fix: Read response as text first, then parse as JSON - prevents "read once" issues
+            const text = await response.text();
+            
+            // If not JSON content-type, show error immediately
+            if (contentType && !contentType.includes("application/json")) {
+              console.error("Server returned non-JSON:", text.substring(0, 100));
+              throw new Error("Server returned HTML instead of JSON. Check server logs.");
+            }
+            
+            // Check if response is ok
+            if (!response.ok) {
+              // Try to parse text as JSON for structured error
+              try {
+                const errorData = JSON.parse(text);
+                throw errorData;
+              } catch {
+                // If not JSON, throw text error
+                throw { error: text.substring(0, 200) };
+              }
+            }
+            
+            // Fix: Safely parse JSON from text - catch parse errors explicitly
+            try {
+              return JSON.parse(text);
+            } catch (parseError) {
+              console.error("JSON parse error:", parseError);
+              console.error("Response text:", text.substring(0, 200));
+              throw new Error("Invalid JSON response from server. Response starts with: " + text.substring(0, 50));
+            }
+          })
+          .then(data => {
+            console.log("Response data:", data);
+            // Check if prediction exists in response, otherwise show error
+            if (data.prediction) {
+              var sentiment = data.prediction;
+              predictionResult.innerHTML = "Predicted sentiment: " + sentiment;
+              
+              // Add color-coding based on sentiment
+              predictionResult.className = '';
+              if (sentiment.toLowerCase().includes('positive')) {
+                predictionResult.classList.add('sentiment-positive');
+                predictionResult.setAttribute('data-sentiment', 'Positive');
+              } else if (sentiment.toLowerCase().includes('negative')) {
+                predictionResult.classList.add('sentiment-negative');
+                predictionResult.setAttribute('data-sentiment', 'Negative');
+              }
+            } else if (data.error) {
+              predictionResult.innerHTML = "Error: " + data.error;
+              predictionResult.className = '';
+            } else {
+              predictionResult.innerHTML = "Error: Unexpected response format";
+              predictionResult.className = '';
+            }
+          })
+          .catch(error => {
+            // Fix: Better error handling - display JSON parse errors clearly
+            console.error("Error:", error);
+            const errorMsg = error.error || error.message || "Failed to get prediction";
+            predictionResult.innerHTML = "Error: " + errorMsg;
+            predictionResult.className = '';
+          });
+      }
+    }
+
+    function downloadPredictions() {
+      console.log("Download prediction")
+    }
+
+    function displayGraph(graphData) {
+      predictionResult.innerHTML = "";
+      predictionResult.className = '';
+      var graphUrl = "data:image/png;base64," + graphData;
+      var img = document.createElement('img');
+      img.src = graphUrl;
+      graphContainer.innerHTML = '';
+      graphContainer.appendChild(img);
+    }
+  </script>
+
+</body>
+
+</html>
